@@ -11,6 +11,7 @@ private:
 public:
     Cible(Adafruit_NeoPixel strip);
     void SetLED(int LED);
+    void Demo_setup(Adafruit_NeoPixel strip);
     int allumage_cible(int LED_DEPART, int PAUSE);
     int allumage_cible(int LED_DEPART, int PAUSE, int NbLedCible);
     int eteindre_cible(int LED_DEPART, int PAUSE);
