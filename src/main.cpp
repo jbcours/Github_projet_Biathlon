@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
+#include "WiFi.h"
+#include "ESPAsyncWebServer.h"
+
 #include "FONCTIONS.h"
+
+// port utilise ESP-32 34(cible3), 35(cible2)
 
 int allumage_cible(int LED_DEPART, int PAUSE);
 int allumage_cible(int LED_DEPART, int PAUSE, int NbLedCible);
@@ -16,6 +21,10 @@ float vcc=3.3;
 unsigned long previousMillis;
 int nb_tir=0;
 
+const char* ssid="ESP32AP";
+const char* password ="devkit1234";
+
+
 #define US 34
 #define Us_Cible2 35
 #define vcc 3.3
@@ -27,10 +36,12 @@ int nb_tir=0;
 
 // Permet d'initialiser une cible qui à 14 Led paramètre définie suite à des test 
 int LED=11;
+int touch_sensor_connected=0;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(nombre_LED, PIN); // Permet d'initialiser l'objet strip de la classe Adafruit_NeoPixel avec les paramères définies
 //strip.begin();
 
+AsyncWebServer server(80);
 
 
 void setup() {
@@ -60,7 +71,25 @@ void setup() {
   delay(500);
   Serial.println("fin du setup");
   */
+  Serial.println("Mode connecte appuyer sur la touche tactile ");
+  while ((touch_sensor_connected==0) && (millis()<= 5000))
+  {
+    if (touch_sensor_connected!=touchRead(T4) && touch_sensor_connected!=1){
+      touch_sensor_connected=1;
+      Serial.println("mode connecte");
+    }
+    delay(500);
+  }
+  //digitalWrite(CIBLE, HIGH);  
+   server.on("/cible/on", HTTP_POST, [](AsyncWebServerRequest *request){      //Alumer CIBLE   fini
+    allumage_cible(1,20);
+   });
+
+
+
+  
 }
+
 
 //Cible cible1 = Cible(strip);
 
