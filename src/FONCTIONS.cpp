@@ -12,6 +12,7 @@ float VCC=3.3;
 //Serial.begin(9600);  // Initialisation de la vitesse de transmission de la liaison série
 //Adafruit_NeoPixel led_strip = Adafruit_NeoPixel(nombre_LED, PIN);
 
+
 Cible::Cible(Adafruit_NeoPixel strip)
 {
     this->led_strip=strip;
@@ -24,6 +25,29 @@ Cible::Cible(Adafruit_NeoPixel strip)
 void Cible::SetLED(int nv_LED){
     this->LED=nv_LED;
 
+}
+
+void Demo_setup(Adafruit_NeoPixel led_strip)
+{
+  int LED=11;
+  led_strip.setPixelColor(LED, 255, 0, 255); // Permet decontroller led par led la couleur que la led affiche
+  led_strip.show();
+  //delay(250);
+  LED=4;
+  led_strip.setPixelColor(LED, 70, 255, 144);
+  //delay(250);
+  led_strip.show();
+  LED=11;
+  led_strip.setPixelColor(LED, 0, 0, 0);
+  //delay(250);
+  LED=4;
+  led_strip.setPixelColor(LED, 0, 0, 0);
+  //delay(250);
+  led_strip.show();
+  LED=1;
+  led_strip.setPixelColor(LED, 255, 255, 255);
+  //delay(500);
+  Serial.println("fin du setup");
 }
 
 int Cible::allumage_cible(int LED_DEPART, int PAUSE)  // fonction servant à allumer toute les leds de l'anneau (16 led) en blanc pour signaler un tir sur la cible  
