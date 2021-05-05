@@ -1,20 +1,21 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
+#include "WiFi.h"
+#include "ESPAsyncWebServer.h"
+
 #include "FONCTIONS.h"
 
-int allumage_cible(int LED_DEPART, int PAUSE);
-int allumage_cible(int LED_DEPART, int PAUSE, int NbLedCible);
+// port utilise ESP-32 34(cible3), 35(cible2)
 
-int eteindre_cible(int LED_DEPART, int PAUSE);
-int eteindre_cible(int LED_DEPART, int PAUSE, int NbLedCible);
 
-int calculResistance(int resistance_fixe,int intensite);
-bool CalculTir(int resistance_fixe, int led_interne, int Valeur_Seuil_Resistance);
-bool CalculTir(int resistance_fixe, int led_interne, int Valeur_Seuil_Resistance, int Broche_US);
 
 float vcc=3.3;
 unsigned long previousMillis;
 int nb_tir=0;
+
+const char* ssid="ESP32AP";
+const char* password ="devkit1234";
+int http_req=0;
 
 #define US 34
 #define Us_Cible2 35
@@ -27,10 +28,14 @@ int nb_tir=0;
 
 // Permet d'initialiser une cible qui à 14 Led paramètre définie suite à des test 
 int LED=11;
+int touch_sensor_connected=0;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(nombre_LED, PIN); // Permet d'initialiser l'objet strip de la classe Adafruit_NeoPixel avec les paramères définies
 //strip.begin();
 
+AsyncWebServer server(80);
+
+Cible cible1 = Cible(strip);
 
 
 void setup() {
@@ -60,12 +65,115 @@ void setup() {
   delay(500);
   Serial.println("fin du setup");
   */
+  /*Serial.println("Mode connecte appuyer sur la touche tactile ");
+  while ((touch_sensor_connected==0) && (millis()<= 5000))
+  {
+    if (touch_sensor_connected!=touchRead(T4) && touch_sensor_connected!=1){
+      touch_sensor_connected=1;
+      Serial.println("mode connecte");
+    }
+    delay(500);
+  }*/
+  //digitalWrite(CIBLE, HIGH);  
+  Serial.println("Creation du point d'acces ...");
+  WiFi.softAP(ssid, password);
+
+  Serial.print("Adresse IP:");
+  Serial.println(WiFi.softAPIP());
+  Serial.println("Serveur demarrer");
+  
+            server.on("/cible/on", HTTP_POST, [](AsyncWebServerRequest *request){      //Alumer CIBLE   fini
+            http_req=1;
+            cible1.allumage_cible(1,50,17);
+        });
+
+          server.on("/cible/off", HTTP_POST, [](AsyncWebServerRequest *request){     //Eteindre CIBLE fini
+            http_req=0;
+            cible1.eteindre_cible(1,25,17);
+        });
+
+
+          server.on("/cible1/on", HTTP_POST, [](AsyncWebServerRequest *request){      //Alumer CIBLE1  fini
+            http_req=1;
+            cible1.allumage_cible(18,25,17);
+        });
+
+          server.on("/cible1/off", HTTP_POST, [](AsyncWebServerRequest *request){     //Eteindre CIBLE1 fini
+            http_req=0;
+            cible1.eteindre_cible(18,25,17);
+        });
+
+
+
+        server.on("/cible2/on", HTTP_POST, [](AsyncWebServerRequest *request){      //Alumer CIBLE2   fini
+            http_req=1;
+            cible1.allumage_cible(34,25,17);
+         });
+
+        server.on("/cible2/off", HTTP_POST, [](AsyncWebServerRequest *request){     //Eteindre CIBLE2 fini
+            http_req=0;
+            cible1.eteindre_cible(34,25,17);
+        });
+
+
+
+        /*server.on("/cible3/on", HTTP_POST, [](AsyncWebServerRequest *request){      //Alumer CIBLE3  fini
+        digitalWrite(CIBLE2, HIGH);
+        
+         });
+
+        server.on("/cible3/off", HTTP_POST, [](AsyncWebServerRequest *request){     //Eteindre CIBLE3 fini
+        digitalWrite(CIBLE2, LOW);
+          });
+
+
+
+        server.on("/cible4/on", HTTP_POST, [](AsyncWebServerRequest *request){      //Alumer CIBLE4   fini
+        digitalWrite(CIBLE2, HIGH);
+        });
+
+        server.on("/cible4/off", HTTP_POST, [](AsyncWebServerRequest *request){     //Eteindre CIBLE4 fini
+        digitalWrite(CIBLE2, LOW);
+         });*/
+
+         /*if(digitalRead(LED) == HIGH){ //---------------Etat LED---------------------
+          server.on("/relay/test", HTTP_POST, [](AsyncWebServerRequest *request){
+          request-> send (200, "text / plain", String ("Salut"));
+          });
+          }
+
+          if(digitalRead(LED) == HIGH){ //---------------Etat LED---------------------
+          server.on("/relay/test", HTTP_POST, [](AsyncWebServerRequest *request){
+          request-> send (200, "text / plain", "test");
+          });
+          }
+          */
+
+
+
+    /*server.on ("/rand", HTTP_POST, [](AsyncWebServerRequest *request) {     // Mode ludique a finir
+    int f = random(2);
+    if(f==1){
+        digitalWrite(CIBLE, HIGH);
+        delay(2000);
+        digitalWrite(CIBLE, LOW);
+    }
+    if(f==2){
+        digitalWrite(CIBLE1, HIGH);
+        delay(2000);
+        digitalWrite(CIBLE1, LOW);
+    }
+  });*/
+
+
+
+  server.begin();
+
+
+  
 }
 
-//Cible cible1 = Cible(strip);
-
 void loop() {
-  Cible cible1 = Cible(strip);
   Serial.println("Corruption avant ou apres cible1");
   //strip.setPixelColor(0, 255, 255, 255); //led exerne 
   int NumCibleTir=3;
